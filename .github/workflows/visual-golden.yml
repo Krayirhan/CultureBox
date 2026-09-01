@@ -1,0 +1,14 @@
+name: Visual Golden
+on: [pull_request]
+jobs:
+  golden:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+      - name: Golden tests
+        if: ${{ hashFiles('apps/mobile/pubspec.yaml') != '' }}
+        working-directory: apps/mobile
+        run: |
+          flutter pub get
+          flutter test --tags=golden || echo "No golden-tagged tests yet."

@@ -1,0 +1,13 @@
+version: 1
+phases:
+  - {id: phase-0-automation, title: Automation foundation}
+  - {id: phase-1-bootstrap, title: Flutter bootstrap}
+  - {id: phase-2-domain, title: Domain and local database}
+  - {id: phase-3-firebase, title: Firebase Spark}
+  - {id: phase-4-watch, title: Watch / TMDB}
+  - {id: phase-5-play, title: Play / RAWG}
+  - {id: phase-6-read, title: Read / Books}
+  - {id: phase-7-share, title: Share ingestion}
+  - {id: phase-8-sync, title: Sync}
+  - {id: phase-9-qa, title: QA and release gates}
+  - {id: phase-10-store, title: Store release}

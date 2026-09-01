@@ -1,0 +1,7 @@
+name: Bug
+description: Reproducible defect
+body:
+  - type: textarea
+    id: repro
+    attributes: {label: Reproduction}
+    validations: {required: true}

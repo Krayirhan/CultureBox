@@ -1,0 +1,71 @@
+version: 1
+tasks:
+  - id: T-0001
+    phase: phase-0-automation
+    title: Validate automation foundation
+    status: READY
+    depends_on: []
+    required_docs: [docs/MASTER_RULES.md, docs/AUTOMATION_BLUEPRINT.md, docs/SECRETS_SETUP.md]
+    skills: [orchestrator, context-optimization]
+    gates: [doctor, secret-scan]
+  - id: T-0100
+    phase: phase-1-bootstrap
+    title: Bootstrap Flutter application
+    status: BACKLOG
+    depends_on: [T-0001]
+    required_docs: [docs/TECH_STACK.md, docs/MOBILE_ARCHITECTURE.md]
+    skills: [feature-implementation, testing]
+  - id: T-0200
+    phase: phase-2-domain
+    title: Implement domain model and Drift schema
+    status: BACKLOG
+    depends_on: [T-0100]
+    skills: [drift-database, testing]
+  - id: T-0300
+    phase: phase-3-firebase
+    title: Configure Firebase Spark, Auth, Firestore and rules
+    status: BACKLOG
+    depends_on: [T-0200]
+    skills: [firebase, security-review]
+  - id: T-0400
+    phase: phase-4-watch
+    title: Implement TMDB vertical slice
+    status: BACKLOG
+    depends_on: [T-0300]
+    skills: [provider-integration, feature-implementation, testing]
+  - id: T-0500
+    phase: phase-5-play
+    title: Implement RAWG vertical slice
+    status: BACKLOG
+    depends_on: [T-0400]
+    skills: [provider-integration, testing]
+  - id: T-0600
+    phase: phase-6-read
+    title: Implement BooksProvider vertical slice
+    status: BACKLOG
+    depends_on: [T-0500]
+    skills: [provider-integration, testing]
+  - id: T-0700
+    phase: phase-7-share
+    title: Implement share ingestion
+    status: BACKLOG
+    depends_on: [T-0600]
+    skills: [share-ingestion, testing]
+  - id: T-0800
+    phase: phase-8-sync
+    title: Implement Firestore sync/outbox
+    status: BACKLOG
+    depends_on: [T-0700]
+    skills: [sync, testing, security-review]
+  - id: T-0900
+    phase: phase-9-qa
+    title: Complete visual/security/release gates
+    status: BACKLOG
+    depends_on: [T-0800]
+    skills: [visual-qa, security-review, release]
+  - id: T-1000
+    phase: phase-10-store
+    title: Build signed AAB and publish through release pipeline
+    status: BACKLOG
+    depends_on: [T-0900]
+    skills: [release]

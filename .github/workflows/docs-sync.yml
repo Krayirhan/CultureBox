@@ -1,0 +1,11 @@
+name: Docs State Check
+on: [pull_request]
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          test -f docs/MASTER_RULES.md
+          test -f docs/CURRENT_STATE.md
+          test -f automation/state/current.json

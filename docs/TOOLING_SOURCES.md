@@ -1,0 +1,2 @@
+# Tooling Sources (verified 2026-09-01)
+Graphify https://graphify.com/mcp ; Serena https://github.com/oraios/serena ; Context7 https://context7.com/docs/resources/all-clients ; Firebase MCP https://firebase.google.com/docs/ai-assistance/mcp-server ; GitHub MCP https://github.com/github/github-mcp-server ; Figma MCP https://developers.figma.com/docs/figma-mcp-server/remote-server-installation/ ; Play action https://github.com/r0adkll/upload-google-play .

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "phase": "phase-0-automation",
+  "activeTask": "T-0001",
+  "status": "ready",
+  "activeAgent": null,
+  "branch": null,
+  "lastCompletedTask": null,
+  "modifiedFiles": [],
+  "failingTests": [],
+  "nextAction": "Run scripts/doctor.ps1 and resolve prerequisites.",
+  "blockers": [],
+  "updatedAt": "2026-09-01T18:22:55.998553+00:00"
+}

@@ -1,0 +1,17 @@
+name: CI
+on: [pull_request, push]
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with: {channel: stable}
+      - name: Flutter checks
+        if: ${{ hashFiles('apps/mobile/pubspec.yaml') != '' }}
+        working-directory: apps/mobile
+        run: |
+          flutter pub get
+          dart format --output=none --set-exit-if-changed .
+          flutter analyze
+          flutter test

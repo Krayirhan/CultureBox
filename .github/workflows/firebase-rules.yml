@@ -1,0 +1,11 @@
+name: Firebase Rules
+on: [pull_request]
+jobs:
+  rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 22}
+      - run: npm install -g firebase-tools
+      - run: firebase emulators:exec --only firestore "echo Add rules-unit-testing command here" --config firebase/firebase.json

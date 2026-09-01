@@ -1,0 +1,6 @@
+name: Tech debt
+description: Refactor/maintenance
+body:
+  - type: textarea
+    id: debt
+    attributes: {label: Debt}

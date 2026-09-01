@@ -1,0 +1,2 @@
+# Secrets Setup
+Never commit Play JSON, keystore, private API keys. GitHub Secrets: PLAY_SERVICE_ACCOUNT_JSON, ANDROID_KEYSTORE_BASE64/PASSWORD/ALIAS/KEY_PASSWORD, TMDB_API_KEY, RAWG_API_KEY.

@@ -1,0 +1,6 @@
+name: Security task
+description: Non-sensitive security work
+body:
+  - type: textarea
+    id: scope
+    attributes: {label: Scope}
