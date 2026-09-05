@@ -3,16 +3,101 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn(){ return request.auth != null; }
     function owns(uid){ return signedIn() && request.auth.uid == uid; }
+    function validKind(kind) { return kind in ['Film', 'Dizi', 'Oyun', 'Kitap']; }
+    function validItem(data) {
+      return data.title is string && data.title.size() > 0 && data.title.size() <= 1000
+        && validKind(data.kind)
+        && data.status in ['queued', 'continuing', 'saved', 'done', 'dropped']
+        && (!('progress' in data) || (data.progress is number && data.progress >= 0 && data.progress <= 1))
+        && (!('updatedAt' in data) || data.updatedAt is timestamp);
+    }
+
+    // Each aggregate change must match this caller's review in the same
+    // atomic write. This protects totals without any billing-dependent service.
+    function validRatingAggregate(contentId) {
+      let contentPath = /databases/$(database)/documents/content/$(contentId);
+      let reviewPath = /databases/$(database)/documents/content/$(contentId)/reviews/$(request.auth.uid);
+      let oldContent = exists(contentPath) ? get(contentPath).data : {'reviewCount': 0, 'ratingSum': 0};
+      let oldRating = exists(reviewPath) ? get(reviewPath).data.rating : 0;
+      let newRating = existsAfter(reviewPath) ? getAfter(reviewPath).data.rating : 0;
+      let expectedCount = oldContent.reviewCount + (oldRating == 0 ? 0 : -1) + (newRating == 0 ? 0 : 1);
+      let afterContent = getAfter(contentPath).data;
+      return afterContent.reviewCount == expectedCount
+        && afterContent.ratingSum == oldContent.ratingSum - oldRating + newRating;
+    }
+
     match /users/{uid} {
-      allow read, write: if owns(uid);
+      // The profile doc (username, displayName, visibility flags) is public
+      // by default so `@handle` pages and reviews can resolve an author
+      // without a second private read; only the owner may write it.
+      allow read: if true;
+      allow write: if owns(uid);
+
+      // Each user's local-first library mirror, used for cross-device sync.
+      // Its own visibility flag (defaulted on at registration, toggleable
+      // from Profile) decides whether the public `@handle` page's diary may
+      // read it — the owner can always read/write regardless of the flag.
       match /items/{itemId} {
-        allow read: if owns(uid);
-        allow create, update: if owns(uid)
-          && request.resource.data.mode in ['watch','play','read','go']
-          && request.resource.data.status in ['saved','queued','in_progress','completed','dropped'];
+        allow read: if owns(uid)
+          || get(/databases/$(database)/documents/users/$(uid)).data.library.visible == true;
+        allow create, update: if owns(uid) && validItem(request.resource.data);
         allow delete: if owns(uid);
       }
       match /preferences/{docId} { allow read, write: if owns(uid); }
+    }
+
+    // One document per claimed handle, used only to make claiming atomic
+    // (a transaction checks-and-creates it) and to block re-registration of
+    // a taken name. Immutable once created: renames are out of scope for now.
+    match /usernames/{name} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.keys().hasOnly(['uid'])
+        && name.matches('^[a-z0-9_]{3,20}$')
+        && request.resource.data.uid == request.auth.uid
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.username == name;
+      allow update, delete: if false;
+    }
+
+    // A content item's own doc caches its title/kind/art for display and
+    // carries aggregate ratings validated against the caller's atomic review
+    // write by validRatingAggregate; no server or paid Firebase service is used.
+    match /content/{contentId} {
+      allow read: if true;
+      allow create, update: if signedIn()
+        && request.resource.data.title is string
+        && validKind(request.resource.data.kind)
+        && request.resource.data.reviewCount is int
+        && request.resource.data.reviewCount >= 0
+        && request.resource.data.ratingSum is number
+        && request.resource.data.ratingSum >= 0
+        && request.resource.data.ratingSum <= request.resource.data.reviewCount * 5
+        && validRatingAggregate(contentId);
+
+      match /reviews/{uid} {
+        allow read: if true;
+        allow create, update: if owns(uid)
+          && request.resource.data.uid == uid
+          && request.resource.data.contentId == contentId
+          && validKind(request.resource.data.contentKind)
+          && request.resource.data.username == get(/databases/$(database)/documents/users/$(uid)).data.username
+          && request.resource.data.rating is int
+          && request.resource.data.rating >= 1
+          && request.resource.data.rating <= 5
+          && request.resource.data.text is string
+          && request.resource.data.text.size() <= 2000
+          && validRatingAggregate(contentId);
+        allow delete: if owns(uid) && validRatingAggregate(contentId);
+      }
+    }
+
+    // Same rule as `content/{contentId}/reviews/{uid}` above, restated with
+    // the recursive wildcard Firestore's own docs use for collection-group
+    // reads — a public profile's "reviews by this author" query spans every
+    // content doc's reviews subcollection at once, and this is the
+    // documented way to make that collection-group query's rule coverage
+    // unambiguous rather than relying on the nested match alone.
+    match /{path=**}/reviews/{uid} {
+      allow read: if true;
     }
   }
 }
