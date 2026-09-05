@@ -17,5 +17,6 @@ graphify-out/
 node_modules/
 *.log
 .idea/
+.serena/
 .DS_Store
 Thumbs.db
