@@ -1,2 +1,8 @@
 . "$PSScriptRoot\_common.ps1"
-if(Test-Path "$Root\apps\mobile\pubspec.yaml"){Push-Location "$Root\apps\mobile";flutter test;Pop-Location}else{Warn "Flutter app not ready"}
+if (-not (Test-Path "$Root\apps\mobile\pubspec.yaml")) { throw 'Flutter app is missing.' }
+Push-Location "$Root\apps\mobile"
+try {
+  Invoke-CheckedCommand -Command flutter -CommandArgs @('test')
+} finally {
+  Pop-Location
+}

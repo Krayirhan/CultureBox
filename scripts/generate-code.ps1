@@ -1,2 +1,7 @@
 . "$PSScriptRoot\_common.ps1"
-if(Test-Path "$Root\apps\mobile\pubspec.yaml"){Push-Location "$Root\apps\mobile";dart run build_runner build --delete-conflicting-outputs;Pop-Location}else{Warn "Flutter app not ready"}
+Push-Location "$Root\apps\mobile"
+try {
+Invoke-CheckedCommand -Command dart -CommandArgs @('run', 'build_runner', 'build', '--delete-conflicting-outputs')
+} finally {
+  Pop-Location
+}

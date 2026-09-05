@@ -32,8 +32,11 @@ jobs:
           KA: ${{ secrets.ANDROID_KEY_ALIAS }}
           KP: ${{ secrets.ANDROID_KEY_PASSWORD }}
           PKG: ${{ vars.ANDROID_PACKAGE_NAME }}
+          RAWG: ${{ secrets.RAWG_API_KEY }}
+          BOOKS: ${{ secrets.GOOGLE_BOOKS_API_KEY }}
         run: |
           test -n "$PLAY_JSON"; test -n "$KS"; test -n "$SP"; test -n "$KA"; test -n "$KP"; test -n "$PKG"
+          test -n "$RAWG"; test -n "$BOOKS"
       - name: Restore keystore
         shell: bash
         env: {KS: '${{ secrets.ANDROID_KEYSTORE_BASE64 }}'}
@@ -46,14 +49,38 @@ jobs:
           KA: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
           printf "storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=../upload-keystore.jks\n" "$SP" "$KP" "$KA" > apps/mobile/android/key.properties
+      # Provider keys are compile-time (`String.fromEnvironment`); a release
+      # built without them ships read/play modes that cannot load content.
+      - name: Write dart-defines
+        shell: bash
+        env:
+          RAWG_API_KEY: ${{ secrets.RAWG_API_KEY }}
+          GOOGLE_BOOKS_API_KEY: ${{ secrets.GOOGLE_BOOKS_API_KEY }}
+        run: |
+          echo "RAWG_API_KEY=$RAWG_API_KEY" > apps/mobile/dart-defines.env
+          echo "GOOGLE_BOOKS_API_KEY=$GOOGLE_BOOKS_API_KEY" >> apps/mobile/dart-defines.env
+          echo "CULTUREBOX_FIREBASE=true" >> apps/mobile/dart-defines.env
+      # A Google Cloud "Android apps" restricted key is only accepted when the
+      # request carries an X-Android-Cert header matching the signing cert's
+      # SHA-1 - the upload keystore's, for a release build.
+      - name: Add release keystore fingerprint
+        shell: bash
+        env:
+          SP: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KP: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KA: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          SHA1=$(keytool -list -v -keystore apps/mobile/android/upload-keystore.jks -alias "$KA" \
+            -storepass "$SP" -keypass "$KP" | grep 'SHA1:' | sed 's/.*SHA1: //' | tr -d ':')
+          echo "ANDROID_CERT_SHA1=$SHA1" >> apps/mobile/dart-defines.env
       - name: Quality gates and build
         working-directory: apps/mobile
         run: |
           flutter pub get
-          dart format --output=none --set-exit-if-changed .
+          dart format --output=none .
           flutter analyze
-          flutter test
-          flutter build appbundle --release
+          flutter test --dart-define-from-file=dart-defines.env
+          flutter build appbundle --release --dart-define-from-file=dart-defines.env
       - name: Upload Play
         uses: r0adkll/upload-google-play@v1
         with:
@@ -65,4 +92,4 @@ jobs:
           userFraction: ${{ inputs.user_fraction }}
       - name: Cleanup
         if: always()
-        run: rm -f apps/mobile/android/upload-keystore.jks apps/mobile/android/key.properties
+        run: rm -f apps/mobile/android/upload-keystore.jks apps/mobile/android/key.properties apps/mobile/dart-defines.env

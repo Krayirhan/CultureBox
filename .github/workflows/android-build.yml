@@ -6,9 +6,41 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+      # Provider keys are compile-time (`String.fromEnvironment`); a build
+      # without them ships an app whose read/play modes cannot load content.
+      - name: Write dart-defines
+        if: ${{ hashFiles('apps/mobile/pubspec.yaml') != '' }}
+        shell: bash
+        env:
+          RAWG_API_KEY: ${{ secrets.RAWG_API_KEY }}
+          GOOGLE_BOOKS_API_KEY: ${{ secrets.GOOGLE_BOOKS_API_KEY }}
+        run: |
+          echo "RAWG_API_KEY=$RAWG_API_KEY" > apps/mobile/dart-defines.env
+          echo "GOOGLE_BOOKS_API_KEY=$GOOGLE_BOOKS_API_KEY" >> apps/mobile/dart-defines.env
+          echo "CULTUREBOX_FIREBASE=true" >> apps/mobile/dart-defines.env
+      # A Google Cloud "Android apps" restricted key is only accepted when the
+      # request carries an X-Android-Cert header matching the signing cert's
+      # SHA-1. This debug build signs with a keystore generated on the fly, so
+      # it must be created before the fingerprint can be read from it.
+      - name: Generate debug keystore fingerprint
+        if: ${{ hashFiles('apps/mobile/pubspec.yaml') != '' }}
+        shell: bash
+        run: |
+          mkdir -p ~/.android
+          if [ ! -f ~/.android/debug.keystore ]; then
+            keytool -genkeypair -v -keystore ~/.android/debug.keystore \
+              -storepass android -keypass android -alias androiddebugkey \
+              -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000
+          fi
+          SHA1=$(keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey \
+            -storepass android -keypass android | grep 'SHA1:' | sed 's/.*SHA1: //' | tr -d ':')
+          echo "ANDROID_CERT_SHA1=$SHA1" >> apps/mobile/dart-defines.env
       - name: Build debug
         if: ${{ hashFiles('apps/mobile/pubspec.yaml') != '' }}
         working-directory: apps/mobile
         run: |
           flutter pub get
-          flutter build appbundle --debug
+          flutter build appbundle --debug --dart-define-from-file=dart-defines.env
+      - name: Cleanup
+        if: always()
+        run: rm -f apps/mobile/dart-defines.env
