@@ -1,0 +1,3 @@
+Maestro library_add.yaml: BLOCKED
+Failure: Element not found: Arama
+Classification: selector/accessibility mapping; no app crash observed.

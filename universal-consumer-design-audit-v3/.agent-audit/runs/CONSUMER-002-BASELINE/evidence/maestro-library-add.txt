@@ -1,0 +1,5 @@
+Maestro 2.9.0 / Pixel_9_Pro
+Flow: library_add.yaml
+Result: BLOCKED
+Failure: Element not found: Arama
+Classification: selector/accessibility mapping; app crash not observed

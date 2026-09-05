@@ -1,0 +1,3 @@
+Maestro CLI 2.9.0 / Pixel_9_Pro
+Flow onboarding_guest.yaml: PASS
+Cold launch, onboarding, category, guest and Home assertions passed.

@@ -1,0 +1,16 @@
+appId: com.krayirhanstudio.culturebox
+
+---
+- launchApp
+- tapOn:
+    point: 15%, 20%
+- tapOn: "Arama"
+- eraseText: 20
+- inputText: "Severance"
+- pressKey: ENTER
+- assertVisible: "Severance"
+- tapOn:
+    point: 50%, 20%
+- assertVisible: "Listeme ekle"
+- tapOn: "Listeme ekle"
+- assertVisible: "İçerik detayı"

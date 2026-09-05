@@ -1,0 +1,7 @@
+appId: APP_ID
+---
+- launchApp:
+    clearState: true
+
+# Product-specific deterministic smoke flow ekle.
+# Deeper consumer exploration interactive Maestro MCP/CLI ile yapılabilir.

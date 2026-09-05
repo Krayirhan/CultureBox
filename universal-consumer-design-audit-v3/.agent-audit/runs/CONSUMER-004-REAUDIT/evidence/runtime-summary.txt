@@ -1,0 +1,4 @@
+Maestro 2.9.0 / Pixel_9_Pro / emulator-5554
+onboarding_guest.yaml: PASS
+library_add.yaml: PASS (Search → result → detail → Listeme ekle)
+Additional adb checkpoints: detail screenshot, library-after-save screenshot, relaunch screenshot.

@@ -1,0 +1,14 @@
+appId: com.krayirhanstudio.culturebox
+
+---
+- clearState
+- launchApp
+- assertVisible: "CultureBox"
+- tapOn: "Devam et"
+- tapOn: "İzle"
+- tapOn: "Devam et"
+- tapOn: "CultureBox’a başla"
+- assertVisible: "Nasıl devam edelim?"
+- tapOn: "Misafir olarak devam et"
+- assertVisible: "Sırada ne var?"
+- assertVisible: "Ana Sayfa"

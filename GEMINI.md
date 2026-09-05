@@ -1,2 +1,2 @@
-# Gemini CLI
-Read canonical rules/state. `Devam et` = resume current task.
+# Generated bridge
+Read docs/MASTER_RULES.md and docs/RESUME_PROTOCOL.md.
